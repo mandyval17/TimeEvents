@@ -12,7 +12,7 @@
 		"resolveJsonModule": true,
 		"typeRoots": ["node_modules/@types"],
 		"strictNullChecks": false,
-		"types": ["node"], // Add this line
+		// "types": ["nod"], // Add this line
 		"esModuleInterop": true // Ensure this is enabled
 	},
 	"include": [
