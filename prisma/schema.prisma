@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URI")
+}
+
+model DailyEvent {
+  id          String   @id @default(uuid())
+  eventDate   DateTime @db.Date
+  timeStr     String   @db.VarChar(5)
+  title       String
+  description String   @db.Text
+  wikiLink    String   @db.Text
+  imageUrl    String   @db.Text
+  exactTime   String   @db.VarChar(20)
+  exactDate   DateTime @db.Date
+  createdAt   DateTime @default(now())
+
+  @@unique([eventDate, timeStr])
+}
+
+model EventQueueFallback {
+  id       String   @id @default(uuid())
+  queuedAt DateTime
+  payload  Json
+  error    String
+}
