@@ -2,6 +2,7 @@
 import { BackoffOptions, Queue } from 'bullmq';
 import { env } from '../../env';
 import { prisma } from '../utils/prisma-client';
+import cron from 'node-cron';
 
 const eventQueue = new Queue('daily-events', { connection: { url: env.REDIS_URL } });
 
@@ -29,4 +30,12 @@ export async function enqueueDailyEvents() {
   console.log('✅ Enqueued or stored 1440 jobs');
 }
 
+cron.schedule('0 0 * * *', () => {
+  console.log('🕛 Running daily event enqueue at midnight');
+  enqueueDailyEvents().catch(err => {
+    console.error('Failed to enqueue daily events:', err);
+  });
+}, {
+  timezone: 'Asia/Kolkata',
+});
 

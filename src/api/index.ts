@@ -4,6 +4,7 @@ import emojis from './emojis';
 import { eventGetter } from './event-getter/router';
 import './cron-job/enqueue';
 import './cron-job/fall-back-queue';
+// import './../api/event-getter/worker/worker';
 
 const router = express.Router();
 

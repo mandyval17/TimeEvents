@@ -5,8 +5,9 @@
 	"main": "src/index.ts",
 	"scripts": {
 		"start": "ts-node src/index.ts",
-		"worker": "ts-node src/api/worker/worker.ts",
+		"worker": "nodemon src/api/event-getter/worker/worker.ts",
 		"dev": "nodemon src/index.ts",
+		"servers": "npx concurrently \"nodemon src/index.ts\" \"nodemon src/api/event-getter/worker/worker.ts\"",
 		"build": "tsc",
 		"start:dist": "node dist/src/index.js",
 		"lint": "eslint --fix src test",

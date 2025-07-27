@@ -12,7 +12,9 @@ const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath('/admin/queues');
 
 const eventQueue = new Queue('daily-events', {
-  connection: { url: env.REDIS_URL },
+  connection: {
+    url: env.REDIS_URL,
+  },
 });
 
 
