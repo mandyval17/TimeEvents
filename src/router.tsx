@@ -5,7 +5,7 @@ import EventDetailsPage from './pages/event-page/event-detail-page';
 
 export const router = createBrowserRouter([
   {
-    path: "/clock",
+    path: "/",
     element: (
       // <AppProvider>
       <AnalogClock />

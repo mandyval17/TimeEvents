@@ -10,7 +10,7 @@ const EventDetailsPage: React.FC = () => {
   useEffect(() => {
     const cameFromClock = sessionStorage.getItem("fromClock");
     if (!data || !cameFromClock) {
-      navigate("/clock", { replace: true });
+      navigate("/", { replace: true });
     } else {
       sessionStorage.removeItem("fromClock");
     }
