@@ -1,0 +1,23 @@
+{
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "always",
+		"source.fixAll": "always",
+		"source.organizeImports": "always",
+		"source.removeUnusedImports": "always"
+	},
+	"eslint.alwaysShowStatus": true,
+	"cSpell.words": [
+		"Arizon",
+		"BRRR",
+		"columngroup",
+		"datatable",
+		"Gridlines",
+		"Magnehelic",
+		"MULTIMILL",
+		"primeflex",
+		"primeicons",
+		"primereact",
+		"reorderable",
+		"TLDAP"
+	]
+}
