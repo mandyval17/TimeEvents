@@ -14,7 +14,7 @@ export const getEvent = async (req: GetEventRequest, res: Response<MessageRespon
     const redisKey = `events:${date}:${time}`;
 
     const cached = await redisClient.get(redisKey);
-    if (cached) return res.json(JSON.parse(cached));
+    if (typeof cached === 'string') return res.json(JSON.parse(cached));
 
     // 2) Fallback to Postgres
     const ev = await prisma.dailyEvent.findUnique({
