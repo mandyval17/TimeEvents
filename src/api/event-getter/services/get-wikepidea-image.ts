@@ -7,7 +7,7 @@ const FALLBACK_IMAGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a
 export async function getWikipediaImage(wikiUrl: string): Promise<string> {
   try {
     const { data } = await axios.get(wikiUrl);
-    const $ = cheerio.load(data);
+    const $ = cheerio.load(typeof data === 'string' ? data : '');
 
     let imageUrl = $('.infobox img').first().attr('src');
 
