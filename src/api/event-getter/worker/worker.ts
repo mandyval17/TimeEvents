@@ -1,4 +1,4 @@
-import { Worker } from 'bullmq';
+import { Job, Worker } from 'bullmq';
 import { env } from '../../../env';
 import { getWikipediaImage } from '../services/get-wikepidea-image';
 import { redisClient } from '../../utils/redis-client';
@@ -10,7 +10,7 @@ const MAX_RETRIES = 5;
 
 const worker = new Worker(
   'daily-events',
-  async (job) => {
+  async (job: Job) => {
     const { date, time } = job.data as { date: string; time: string };
     const redisKey = `events:${date}:${time}`;
     // throw new Error('Simulated failure for fallback test');
@@ -60,7 +60,7 @@ const worker = new Worker(
   { connection },
 );
 
-worker.on('failed', async (job, err) => {
+worker.on('failed', async (job: Job, err) => {
   if (!job) {
     console.error('Job is undefined in failed event:', err);
     return;

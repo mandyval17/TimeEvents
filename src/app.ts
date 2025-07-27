@@ -1,7 +1,7 @@
 require('dotenv').config();
 import cookieParser from 'cookie-parser';
 // import cors from 'cors';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 import api from './api';
 import cors from 'cors';
@@ -31,7 +31,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
-app.get<{}, MessageResponse>('/', (req, res) => {
+app.get<{}, MessageResponse>('/', (req: Request, res: Response) => {
   res.json({
     data: null,
     message: '🦄🌈✨👋🌎🌍🌏✨🌈🦄',

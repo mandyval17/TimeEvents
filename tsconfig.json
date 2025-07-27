@@ -5,14 +5,15 @@
 		"sourceMap": true,
 		"target": "esnext",
 		"module": "commonjs",
-		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"noImplicitAny": true,
 		"strict": true,
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
 		"typeRoots": ["node_modules/@types"],
-		"strictNullChecks": false
+		"strictNullChecks": false,
+		"types": ["node"], // Add this line
+		"esModuleInterop": true // Ensure this is enabled
 	},
 	"include": [
 		"./*.js",

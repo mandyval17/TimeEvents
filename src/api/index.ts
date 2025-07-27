@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import MessageResponse from '../interfaces/message-response';
 import { eventGetter } from './event-getter/router';
 import './cron-job/enqueue';
@@ -8,7 +8,7 @@ import './cron-job/fall-back-queue';
 const router = express.Router();
 
 
-router.get<{}, MessageResponse>('/ping', (req, res) => {
+router.get<{}, MessageResponse>('/ping', (req: Request, res: Response) => {
   res.json({
     data: null,
     message: 'API - 👋🌎🌍🌏',
