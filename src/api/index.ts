@@ -1,6 +1,5 @@
 import express from 'express';
 import MessageResponse from '../interfaces/message-response';
-import emojis from './emojis';
 import { eventGetter } from './event-getter/router';
 import './cron-job/enqueue';
 import './cron-job/fall-back-queue';
@@ -16,7 +15,6 @@ router.get<{}, MessageResponse>('/ping', (req, res) => {
   });
 });
 
-router.use('/emojis', emojis);
 
 router.use('/event', eventGetter);
 
