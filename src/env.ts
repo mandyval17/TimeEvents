@@ -1,7 +1,8 @@
-import { config } from 'dotenv';
 import { z } from 'zod';
 import validateSchema from './utils/validate-schema';
-config();
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const ENVSchema = z.object({
   POSTGRES_URI: z.string({

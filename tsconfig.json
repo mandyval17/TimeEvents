@@ -11,16 +11,10 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
 		"strictNullChecks": false,
-		"types": ["node"], // Add this line
-		"esModuleInterop": true // Ensure this is enabled
+		"types": ["node"],
+		"esModuleInterop": true,
+		"typeRoots": ["./node_modules/@types", "./types"]
 	},
-	"include": [
-		"./*.js",
-		"src/api/**/*.ts",
-		"src/**/*.ts",
-		"test/**/*.ts",
-		"prisma/**/*.ts",
-		"src/api/event-getter/handlers/get-event.ts"
-	],
+	"include": ["src/**/*.ts", "test/**/*.ts", "prisma/**/*.ts"],
 	"exclude": ["node_modules", "dist"]
 }
