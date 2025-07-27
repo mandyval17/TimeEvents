@@ -10,9 +10,8 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
-		"typeRoots": ["node_modules/@types"],
 		"strictNullChecks": false,
-		// "types": ["nod"], // Add this line
+		"types": ["node"], // Add this line
 		"esModuleInterop": true // Ensure this is enabled
 	},
 	"include": [
