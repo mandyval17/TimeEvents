@@ -11,7 +11,7 @@ import MessageResponse from './interfaces/message-response';
 import { notFound } from './middlewares/notFound';
 import { errorHandler } from './middlewares/errorHandler';
 import { terminalLogger } from './middlewares/terminalLogger';
-import bullBoardAdapter from './../src/api/bullBoard';
+import bullBoardAdapter from './api/bullBoard';
 
 
 const app = express();

@@ -60,7 +60,7 @@ const worker = new Worker(
   { connection },
 );
 
-worker.on('failed', async (job: Job, err) => {
+worker.on('failed', async (job: Job | undefined, err: Error) => {
   if (!job) {
     console.error('Job is undefined in failed event:', err);
     return;

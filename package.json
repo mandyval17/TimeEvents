@@ -5,7 +5,7 @@
 	"main": "dist/index",
 	"types": "dist/index",
 	"scripts": {
-		"start": "npm run build && npx concurrently \"node dist/src/index.js\" \"node dist/src/api/event-getter/worker/worker.js\"",
+		"start": "npm run build && npx concurrently \"node dist/index.js\" \"node dist/api/event-getter/worker/worker.js\"",
 		"worker": "nodemon src/api/event-getter/worker/worker.ts",
 		"dev": "nodemon src/index.ts",
 		"servers": "npx concurrently \"nodemon src/index.ts\" \"nodemon src/api/event-getter/worker/worker.ts\"",
