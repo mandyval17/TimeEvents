@@ -2,7 +2,8 @@
 	"name": "express-api-starter-ts",
 	"version": "1.2.0",
 	"description": " A basic starter for an express.js API with Typescript",
-	"main": "src/index.ts",
+	"main": "dist/index",
+	"types": "dist/index",
 	"scripts": {
 		"start": "npm run build && npx concurrently \"node dist/src/index.js\" \"node dist/src/api/event-getter/worker/worker.js\"",
 		"worker": "nodemon src/api/event-getter/worker/worker.ts",
