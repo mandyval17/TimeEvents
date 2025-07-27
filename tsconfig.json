@@ -1,20 +1,24 @@
 {
 	"compilerOptions": {
 		"moduleResolution": "node",
+		"rootDir": "src",
 		"outDir": "dist",
 		"sourceMap": true,
 		"target": "esnext",
 		"module": "commonjs",
+		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
-		"noImplicitAny": true,
 		"strict": true,
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
-		"strictNullChecks": false,
 		"types": ["node"],
-		"esModuleInterop": true,
-		"typeRoots": ["./node_modules/@types", "./types"]
+		"noImplicitAny": true,
+		"allowJs": true
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts", "prisma/**/*.ts"],
+	"include": [
+		"src/**/*.ts",
+		"prisma/*.ts", // if you seed in TypeScript
+		"test/**/*.ts" // for your local tests
+	],
 	"exclude": ["node_modules", "dist"]
 }
