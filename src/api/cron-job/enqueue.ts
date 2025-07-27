@@ -29,6 +29,7 @@ export async function enqueueDailyEvents() {
   }
   console.log('✅ Enqueued or stored 1440 jobs');
 }
+console.log('🕛 Running daily event enqueue at midnight');
 
 cron.schedule('0 0 * * *', () => {
   console.log('🕛 Running daily event enqueue at midnight');
