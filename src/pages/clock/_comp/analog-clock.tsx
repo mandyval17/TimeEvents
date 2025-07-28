@@ -11,34 +11,22 @@ const NUMBER_POSITIONS = Array.from({ length: 12 }, (_, i) => ({
   offset: 130,
 }));
 
-const POLLING_INTERVAL = 3000; // Check every 3 seconds
-const MAX_POLLING_ATTEMPTS = 10; // Max 30 seconds waiting
 
 const AnalogClock: React.FC = () => {
   const [date, setDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
   const [currentTime, setCurrentTime] = useState({ hours: 0, minutes: 0 });
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const attemptCount = useRef(0);
+  const controllerRef = useRef<AbortController | null>(null);
 
   const navigate = useNavigate();
   useEffect(() => {
     const timer = setInterval(() => setDate(new Date()), 1000);
     return () => {
       clearInterval(timer);
-      stopPolling();
+      controllerRef.current?.abort();
     };
   }, []);
 
-
-  const stopPolling = () => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-    attemptCount.current = 0;
-  };
 
   const seconds = date.getSeconds();
   const minutes = date.getMinutes();
@@ -52,92 +40,39 @@ const AnalogClock: React.FC = () => {
 
 
 
-  const checkEventStatus = useCallback(async (hours: number, minutes: number) => {
-    try {
-      const res = await axios.post(`${BACKEND_URL}/event/${hours}/${minutes}`);
 
-      if (res.status === 200) {
-        // Event is ready
-        stopPolling();
-        sessionStorage.setItem("fromClock", "true");
-        navigate("/event-details", { state: res.data });
-      }
-    } catch (error: any) {
-      attemptCount.current += 1;
 
-      if (attemptCount.current >= MAX_POLLING_ATTEMPTS) {
-        stopPolling();
-        setLoading(false);
-        toast.error("Event generation timed out. Please try again.");
-        return;
-      }
 
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 202) {
-          // Still generating
-          setStatusMessage(`Generating event... (${attemptCount.current}/${MAX_POLLING_ATTEMPTS})`);
-        } else {
-          setStatusMessage(error.response?.data?.message || "Please wait...");
-        }
-      }
-    }
-  }, [navigate]);
-
-  const startPolling = useCallback((hours: number, minutes: number) => {
-    setCurrentTime({ hours, minutes });
-    attemptCount.current = 0;
-
-    // Initial check immediately
-    checkEventStatus(hours, minutes);
-
-    // Then check periodically
-    pollingRef.current = setInterval(() => {
-      checkEventStatus(hours, minutes);
-    }, POLLING_INTERVAL);
-  }, [checkEventStatus]);
 
   const handleClockClick = useCallback(async () => {
     if (loading) return;
 
     setLoading(true);
-    setStatusMessage("Starting generation...");
+    setCurrentTime({ hours, minutes });
+
+    const controller = new AbortController();
+    controllerRef.current = controller;
 
     try {
-      const res = await axios.post(`${BACKEND_URL}/event/${hours}/${minutes}`);
-
-      switch (res.status) {
-        case 200:
-          // Already exists
-          sessionStorage.setItem("fromClock", "true");
-          navigate("/event-details", { state: res.data });
-          break;
-
-        case 202:
-          // Being generated
-          setStatusMessage(res.data.message);
-          startPolling(hours, minutes);
-          break;
-
-        case 503:
-          // System busy
-          setLoading(false);
-          toast.error(res.data.message);
-          break;
-
-        default:
-          setLoading(false);
-          toast.error("Unexpected response");
-      }
+      const res = await axios.post(
+        `${BACKEND_URL}/event/${hours}/${minutes}`,
+        {},
+        { signal: controller.signal }
+      );
+      sessionStorage.setItem("fromClock", "true");
+      navigate("/event-details", { state: res.data.data });
     } catch (error: any) {
-      setLoading(false);
-
-      if (axios.isAxiosError(error)) {
+      if (axios.isCancel(error) || error.name === "CanceledError") {
+        toast("Request cancelled");
+      } else if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.message || "Request failed");
       } else {
         toast.error("Unexpected error occurred");
       }
+    } finally {
+      setLoading(false);
     }
-  }, [hours, minutes, navigate, loading, startPolling]);
+  }, [navigate, loading, hours, minutes]);
 
   return (
     <Box
@@ -176,7 +111,7 @@ const AnalogClock: React.FC = () => {
               maxWidth: "80%",
             }}
           >
-            {statusMessage || `Generating event for ${hours}:${minutes.toString().padStart(2, '0')}`}
+            {`Generating event for ${currentTime.hours}:${currentTime.minutes.toString().padStart(2, '0')}`}
           </Typography>
 
           <Typography
@@ -188,8 +123,8 @@ const AnalogClock: React.FC = () => {
               "&:hover": { textDecoration: "underline" }
             }}
             onClick={() => {
-              stopPolling();
               setLoading(false);
+              controllerRef.current?.abort();
             }}
           >
             Cancel
