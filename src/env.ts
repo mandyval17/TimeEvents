@@ -13,10 +13,10 @@ const ENVSchema = z.object({
     required_error: 'NODE_ENV is required',
     invalid_type_error: 'NODE_ENV must be a string',
   }),
-  REDIS_URL: z.string({
-    required_error: 'REDIS_URL is required',
-    invalid_type_error: 'REDIS_URL must be a string',
-  }),
+  // REDIS_URL: z.string({
+  //   required_error: 'REDIS_URL is required',
+  //   invalid_type_error: 'REDIS_URL must be a string',
+  // }),
   ANTHROPIC_KEY: z.string({
     required_error: 'ANTHROPIC_KEY is required',
     invalid_type_error: 'ANTHROPIC_KEY must be a string',
