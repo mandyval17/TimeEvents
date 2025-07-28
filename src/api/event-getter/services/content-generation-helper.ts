@@ -4,14 +4,12 @@ import { anthropic } from '../../utils/anthropic-client';
 export const generateEventContent = async (time: string) => {
 
   const prompt = `Find a Wikipedia historical event that occurred:
-    - Exactly at ${time} IST OR 
-    - Time must be accurate per Wikipedia records, or can also include if the time is in between the events but not outside the event and this is the most important part, dont hallucinate
-    - The clock time should be related to the event time, for example if the event is an interval in which the clock time falls that’s ok.  But clock time cannot be outside that. 
+  - Within ±5 minutes of ${time} IST (${parseInt(time.split(':')[0]) - 5}:${time.split(':')[1]} to ${parseInt(time.split(':')[0]) + 5}:${time.split(':')[1]} IST)
+  - Time accuracy is critical - event must directly relate to this specific 10-minute window
 
     Requirements:
     2. Convert all times to IST (Indian Standard Time)
     3. Include the exact time or time range in IST
-    5. Include exact Date and time
     4. Provide a 300-word summary
     5. Format response as JSON:
     6. ALWAYS RETURN VALID JSON ONLY DONT INCLUDE ANYTHING ELSE THAN JSON NOT EVEN YOUR OWN RESPONSE

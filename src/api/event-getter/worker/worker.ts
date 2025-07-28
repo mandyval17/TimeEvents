@@ -4,6 +4,7 @@ import { getWikipediaImage } from '../services/get-wikepidea-image';
 import { redisClient } from '../../utils/redis-client';
 import { prisma } from '../../utils/prisma-client';
 import { generateEventContent } from '../services/content-generation-helper';
+import { EventMatcher } from '../services/event-matching-helper';
 
 const connection = { url: env.REDIS_URL };
 const MAX_RETRIES = 5;
@@ -13,7 +14,7 @@ const worker = new Worker(
   async (job: Job) => {
     const { date, time } = job.data as { date: string; time: string };
     const redisKey = `events:${date}:${time}`;
-    // throw new Error('Simulated failure for fallback test');
+    const generatingKey = `generating:${date}:${time}`;
 
     const exists = await prisma.dailyEvent.findUnique({
       where: { eventDate_timeStr: { eventDate: new Date(date), timeStr: time } },
@@ -23,10 +24,16 @@ const worker = new Worker(
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         let ev = await generateEventContent(time);
-        const linkExists = await prisma.dailyEvent.findFirst({
-          where: { wikiLink: ev.wikiLink, timeStr: time },
+        console.log('timeStr', time);
+        const recentEvents = await prisma.dailyEvent.findMany({
+          where: { timeStr: time },
         });
-        if (linkExists) continue;
+        // console.log('hellp');
+        if (await EventMatcher.isSimilarEvent(ev, recentEvents)) {
+          console.log('already exists');
+          continue;
+        }
+        // console.log('h');
 
         const imageUrl = await getWikipediaImage(ev.wikiLink);
         await prisma.dailyEvent.create({
@@ -43,13 +50,14 @@ const worker = new Worker(
         });
 
         const payload = { date, time, ...ev, imageUrl };
+        await redisClient.del(generatingKey);
         await redisClient.setEx(redisKey, 24 * 3600, JSON.stringify(payload));
         return;
 
       } catch (error) {
         console.error(`Attempt ${attempt} failed for job ${job.id}:`, error);
         if (attempt === MAX_RETRIES) {
-          // throw error;
+          await redisClient.del(generatingKey);
         }
 
       }
