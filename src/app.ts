@@ -11,7 +11,7 @@ import MessageResponse from './interfaces/message-response';
 import { notFound } from './middlewares/notFound';
 import { errorHandler } from './middlewares/errorHandler';
 import { terminalLogger } from './middlewares/terminalLogger';
-import bullBoardAdapter from './api/bullBoard';
+// import bullBoardAdapter from './api/bullBoard';
 
 
 const app = express();
@@ -41,7 +41,7 @@ app.get<{}, MessageResponse>('/', (req: Request, res: Response) => {
 
 app.use('/api/v1', api);
 
-app.use('/admin/queues', bullBoardAdapter.getRouter());
+// app.use('/admin/queues', bullBoardAdapter.getRouter());
 
 
 
