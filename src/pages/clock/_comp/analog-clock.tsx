@@ -1,7 +1,7 @@
 import { BACKEND_URL } from '@/const';
-import { Box, Typography } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import axios from 'axios';
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 
@@ -11,14 +11,34 @@ const NUMBER_POSITIONS = Array.from({ length: 12 }, (_, i) => ({
   offset: 130,
 }));
 
+const POLLING_INTERVAL = 3000; // Check every 3 seconds
+const MAX_POLLING_ATTEMPTS = 10; // Max 30 seconds waiting
+
 const AnalogClock: React.FC = () => {
   const [date, setDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [currentTime, setCurrentTime] = useState({ hours: 0, minutes: 0 });
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const attemptCount = useRef(0);
 
   const navigate = useNavigate();
   useEffect(() => {
     const timer = setInterval(() => setDate(new Date()), 1000);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      stopPolling();
+    };
   }, []);
+
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+    attemptCount.current = 0;
+  };
 
   const seconds = date.getSeconds();
   const minutes = date.getMinutes();
@@ -29,20 +49,95 @@ const AnalogClock: React.FC = () => {
   const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
   const formattedTime = date.toLocaleTimeString();
-  const handleClockClick = useCallback(async () => {
+
+
+
+  const checkEventStatus = useCallback(async (hours: number, minutes: number) => {
     try {
-      sessionStorage.setItem("fromClock", "true");
       const res = await axios.post(`${BACKEND_URL}/event/${hours}/${minutes}`);
-      navigate("/event-details", { state: res.data });
+
+      if (res.status === 200) {
+        // Event is ready
+        stopPolling();
+        sessionStorage.setItem("fromClock", "true");
+        navigate("/event-details", { state: res.data });
+      }
     } catch (error: any) {
+      attemptCount.current += 1;
+
+      if (attemptCount.current >= MAX_POLLING_ATTEMPTS) {
+        stopPolling();
+        setLoading(false);
+        toast.error("Event generation timed out. Please try again.");
+        return;
+      }
+
       if (axios.isAxiosError(error)) {
-        toast.error(error.response?.data?.message || "Something went wrong");
+        if (error.response?.status === 202) {
+          // Still generating
+          setStatusMessage(`Generating event... (${attemptCount.current}/${MAX_POLLING_ATTEMPTS})`);
+        } else {
+          setStatusMessage(error.response?.data?.message || "Please wait...");
+        }
+      }
+    }
+  }, [navigate]);
+
+  const startPolling = useCallback((hours: number, minutes: number) => {
+    setCurrentTime({ hours, minutes });
+    attemptCount.current = 0;
+
+    // Initial check immediately
+    checkEventStatus(hours, minutes);
+
+    // Then check periodically
+    pollingRef.current = setInterval(() => {
+      checkEventStatus(hours, minutes);
+    }, POLLING_INTERVAL);
+  }, [checkEventStatus]);
+
+  const handleClockClick = useCallback(async () => {
+    if (loading) return;
+
+    setLoading(true);
+    setStatusMessage("Starting generation...");
+
+    try {
+      const res = await axios.post(`${BACKEND_URL}/event/${hours}/${minutes}`);
+
+      switch (res.status) {
+        case 200:
+          // Already exists
+          sessionStorage.setItem("fromClock", "true");
+          navigate("/event-details", { state: res.data });
+          break;
+
+        case 202:
+          // Being generated
+          setStatusMessage(res.data.message);
+          startPolling(hours, minutes);
+          break;
+
+        case 503:
+          // System busy
+          setLoading(false);
+          toast.error(res.data.message);
+          break;
+
+        default:
+          setLoading(false);
+          toast.error("Unexpected response");
+      }
+    } catch (error: any) {
+      setLoading(false);
+
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Request failed");
       } else {
         toast.error("Unexpected error occurred");
       }
     }
-
-  }, [hours, minutes, navigate]);
+  }, [hours, minutes, navigate, loading, startPolling]);
 
   return (
     <Box
@@ -55,6 +150,53 @@ const AnalogClock: React.FC = () => {
         alignItems: "center",
       }}
     >
+      {/* Loading overlay */}
+      {loading && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: "rgba(0,0,0,0.7)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 20,
+          }}
+        >
+          <CircularProgress size={60} thickness={4} sx={{ mb: 3, color: "#fff" }} />
+          <Typography
+            variant="h6"
+            sx={{
+              color: "#fff",
+              textAlign: "center",
+              maxWidth: "80%",
+            }}
+          >
+            {statusMessage || `Generating event for ${hours}:${minutes.toString().padStart(2, '0')}`}
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              color: "#aaa",
+              mt: 2,
+              cursor: "pointer",
+              "&:hover": { textDecoration: "underline" }
+            }}
+            onClick={() => {
+              stopPolling();
+              setLoading(false);
+            }}
+          >
+            Cancel
+          </Typography>
+        </Box>
+      )}
+
       <Box
         onClick={handleClockClick}
         sx={{
